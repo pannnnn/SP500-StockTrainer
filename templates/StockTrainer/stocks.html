@@ -1,0 +1,124 @@
+{% extends 'StockTrainer/layout.html' %}
+
+{% block body %}
+    {% include "StockTrainer/nav.html" with active_tab='2' %}
+    {% include "StockTrainer/searchbar.html" %}
+    <ul class="collapsible">
+        {% for stock_symbol in stock_symbols %}
+            <li>
+                <div class="collapsible-header"><i class="material-icons">menu</i>{{ stock_symbol }}</div>
+                <div class="collapsible-body">
+                    <div id="{{ stock_symbol }}" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block extra_js %}
+    <!-- Materialize CSS
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <!-- Highcharts JS
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+    <script>
+        let elem = document.querySelector('.collapsible');
+        let instance = new M.Collapsible(elem);
+
+        let stocks = document.querySelectorAll('.collapsible-header');
+
+        function drawChart(result, stock_symbol) {
+            let data = [];
+            for (const point of result) {
+                data.push([point["time"], point[stock_symbol]]);
+            }
+
+            (function plot(data) {
+                console.log(data);
+                Highcharts.chart(stock_symbol, {
+                    chart: {
+                        zoomType: 'x'
+                    },
+                    title: {
+                        text: stock_symbol + ' Stock Closing Prices Since 1997-01-01 (In Days)'
+                    },
+                    subtitle: {
+                        text: document.ontouchstart === undefined ?
+                            'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+                    },
+                    xAxis: {
+                        type: 'datetime'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Stock Price'
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: {
+                                    x1: 0,
+                                    y1: 0,
+                                    x2: 0,
+                                    y2: 1
+                                },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+
+                    series: [{
+                        type: 'area',
+                        name: 'Closing Price',
+                        data: data
+                    }]
+                });
+            })(data);
+        }
+
+        Array.from(stocks).forEach(stock => {
+            stock.addEventListener('click', function (e) {
+                if (e.currentTarget.dataset.triggered) return;
+                e.currentTarget.dataset.triggered = true;
+                let stock_symbol = e.target.innerHTML.split('>')[2];
+
+                $.ajax({
+                    type: "GET",
+                    url: "/stock",
+                    data: {"stock_symbol": stock_symbol},
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: function (result, status, xhr) {
+                        drawChart(result, stock_symbol);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Local error callback.");
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock extra_js %}
