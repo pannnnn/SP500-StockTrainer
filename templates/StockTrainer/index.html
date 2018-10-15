@@ -173,7 +173,7 @@
                 radioClass: 'iradio_square-green',
             });
 
-            function drawChart(result, stock_symbol) {
+            function drawChart(result, stock_symbol, company_name) {
                 let data = [];
                 for (const point of result) {
                     data.push([point["time"], point[stock_symbol]]);
@@ -185,7 +185,7 @@
                             zoomType: 'x'
                         },
                         title: {
-                            text: stock_symbol + ' Stock Closing Prices Since 1997-01-01 (In Days)'
+                            text: company_name + ' Stock Closing Prices Since 1997-01-01 (In Days)'
                         },
                         subtitle: {
                             text: document.ontouchstart === undefined ?
@@ -313,6 +313,7 @@
 
             $('.i-checks').on('ifChecked', function () {
                 let stock_symbol = $(this).closest('td').next()[0].outerText;
+                let company_name = $(this).closest('td').next().next()[0].outerText;
                 let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
                     '<div class="ibox-title"><h5>Stock Price: ' + stock_symbol + '</h5></div>' +
                     '<div class="ibox-content text-center">' +
@@ -328,7 +329,7 @@
                         contentType: "application/json",
                         success: function (result, status, xhr) {
                             $("#draw-section").append(html_snippet);
-                            drawChart(result, stock_symbol);
+                            drawChart(result, stock_symbol, company_name);
                             data_cache[stock_symbol] = result;
                         },
                         error: function (xhr, status, error) {
@@ -367,7 +368,7 @@
                     {
                         text: 'Equal Weight',
                         action: function (e, dt, node, config) {
-                            let combined_symbol = checked_cache.join('_') + "_ew";
+                            let combined_symbol = checked_cache.join('_') + "_EQUAL_WEIGHT";
 
                             $(".weight_graph").hide();
 
@@ -395,13 +396,13 @@
                                 '<div id="' + combined_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
                                 '</div></div></div>';
                             $("#draw-section").prepend(html_snippet);
-                            drawChart(combined_result, combined_symbol);
+                            drawChart(combined_result, combined_symbol, combined_symbol);
                         }
                     },
                     {
                         text: 'Price Weight',
                         action: function (e, dt, node, config) {
-                            let combined_symbol = checked_cache.join('_') + "_pw";
+                            let combined_symbol = checked_cache.join('_') + "_PRICE_WEIGHT";
 
                             $(".weight_graph").hide();
 
@@ -429,7 +430,7 @@
                                 '<div id="' + combined_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
                                 '</div></div></div>';
                             $("#draw-section").prepend(html_snippet);
-                            drawChart(combined_result, combined_symbol);
+                            drawChart(combined_result, combined_symbol, combined_symbol);
                         }
                     }
                 ]
