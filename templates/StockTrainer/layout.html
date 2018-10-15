@@ -2,17 +2,19 @@
 {% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
     <title>{% block title %}Stock Trainer{% endblock title %}</title>
 
     <!-- CSS
            –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'StockTrainer/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/../../static/css/StockTrainer/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock extra_css %}
 
     <!-- JAVASCRIPT
@@ -20,10 +22,9 @@
 </head>
 <body>
 
-<div class="container">
+<div class="top-navigation">
     {% block body %}
     {% endblock body %}
-    {% include "StockTrainer/footer.html" %}
 </div>
 
 {% block extra_js %}{% endblock extra_js %}

@@ -5,7 +5,10 @@ from .utils import *
 
 # Create your views here.
 def index(request):
-    return render(request, 'StockTrainer/index.html')
+    context = {
+        "stock_symbols": sp500
+    }
+    return render(request, 'StockTrainer/index.html', context)
 
 
 def stocks(request):

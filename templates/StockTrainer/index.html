@@ -1,8 +1,442 @@
 {% extends 'StockTrainer/layout.html' %}
 
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/plugins/iCheck/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/plugins/dataTables/datatables.min.css' %}">
+{% endblock extra_css %}
+
+
 {% block body %}
-    {% include "StockTrainer/nav.html" with active_tab='1' %}
-    <h3 class="center-align red lighten-3">
-        Hello Stock Trainer!
-    </h3>
+
+    <div id="wrapper">
+        <div id="page-wrapper" class="gray-bg">
+            <div class="row border-bottom white-bg">
+                <nav class="navbar navbar-static-top" role="navigation">
+                    <div class="navbar-header">
+                        <button aria-controls="navbar" aria-expanded="false" data-target="#navbar"
+                                data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+                            <i class="fa fa-reorder"></i>
+                        </button>
+                        <a href="#" class="navbar-brand">Stock Trainer</a>
+                    </div>
+                    <div class="navbar-collapse collapse" id="navbar">
+                        <ul class="nav navbar-nav">
+                            <li class="dropdown">
+                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
+                                <ul role="menu" class="dropdown-menu">
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
+                                <ul role="menu" class="dropdown-menu">
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
+                                <ul role="menu" class="dropdown-menu">
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
+                                <ul role="menu" class="dropdown-menu">
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                    <li><a href="">Menu item</a></li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <div class="wrapper wrapper-content">
+                <div class="container-fluid">
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    <h5>S&P 500 Listing </h5>
+                                </div>
+                                <div class="ibox-content">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover dataTables-example">
+                                            <thead>
+                                            <tr>
+
+                                                <th></th>
+                                                <th>Company Symbol</th>
+                                                <th>Company Name</th>
+                                                <th>Reserved</th>
+                                                <th>Reserved</th>
+                                                <th>Reserved</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for stock_symbol, company_name in stock_symbols.items %}
+                                                <tr>
+                                                    <td><input type="checkbox" class="i-checks" name="input[]"></td>
+                                                    <td>{{ stock_symbol }}</td>
+                                                    <td>{{ company_name }}</td>
+                                                    <td>Reserved</td>
+                                                    <td>Reserved</td>
+                                                    <td><a href="#"><i class="fa fa-check text-navy"></i></a></td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row" id="draw-section">
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="footer">
+                <div class="text-center">
+                    <strong>Copyright</strong> Hugh Pan &copy; 2018-2018
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 {% endblock %}
+
+{% block extra_js %}
+
+    {% load static %}
+    <!-- Mainly scripts -->
+    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'js/inspinia.js' %}"></script>
+    <script src="{% static 'js/plugins/pace/pace.min.js' %}"></script>
+
+    <!-- Peity -->
+    <script src="{% static 'js/plugins/peity/jquery.peity.min.js' %}"></script>
+
+    <!-- Peity demo -->
+    <script src="{% static 'js/demo/peity-demo.js' %}"></script>
+
+    <!-- iCheck -->
+    <script src="{% static 'js/plugins/iCheck/icheck.min.js' %}"></script>
+
+    <!-- Datatables -->
+    <script src="{% static 'js/plugins/dataTables/datatables.min.js' %}"></script>
+
+    <!-- Highcharts JS -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const WEIGHT_STRATEGY = {
+                EQUAL_WEIGHT: 0,
+                PRICE_WEIGHT: 1,
+            };
+            let display_cache = [];
+            let checked_cache = [];
+            let data_cache = {};
+
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green',
+            });
+
+            function drawChart(result, stock_symbol) {
+                let data = [];
+                for (const point of result) {
+                    data.push([point["time"], point[stock_symbol]]);
+                }
+
+                (function plot(data) {
+                    Highcharts.chart(stock_symbol, {
+                        chart: {
+                            zoomType: 'x'
+                        },
+                        title: {
+                            text: stock_symbol + ' Stock Closing Prices Since 1997-01-01 (In Days)'
+                        },
+                        subtitle: {
+                            text: document.ontouchstart === undefined ?
+                                'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
+                        },
+                        xAxis: {
+                            type: 'datetime'
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Stock Price'
+                            }
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            area: {
+                                fillColor: {
+                                    linearGradient: {
+                                        x1: 0,
+                                        y1: 0,
+                                        x2: 0,
+                                        y2: 1
+                                    },
+                                    stops: [
+                                        [0, Highcharts.getOptions().colors[0]],
+                                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                                    ]
+                                },
+                                marker: {
+                                    radius: 2
+                                },
+                                lineWidth: 1,
+                                states: {
+                                    hover: {
+                                        lineWidth: 1
+                                    }
+                                },
+                                threshold: null
+                            }
+                        },
+
+                        series: [{
+                            type: 'area',
+                            name: 'Closing Price',
+                            data: data
+                        }]
+                    });
+                })(data);
+            }
+
+            function equal_weight(combined_symbol) {
+                let data_size = data_cache[checked_cache[0]].length;
+                let first_symbol = checked_cache[0];
+                let combined_result = new Array(data_size).fill({});
+
+                combined_result.forEach(function (item, i) {
+                    combined_result[i] = {
+                        'time': data_cache[first_symbol][i]["time"],
+                    };
+                    combined_result[i][combined_symbol] = data_cache[first_symbol][i][first_symbol];
+                });
+
+                for (let i = 1; i < checked_cache.length; i++) {
+                    let cur_stock_symbol = checked_cache[i];
+                    let cur_stock_data = data_cache[cur_stock_symbol];
+                    if (i === checked_cache.length - 1) {
+                        combined_result.forEach(function (item, j) {
+                            combined_result[j][combined_symbol] += cur_stock_data[j][cur_stock_symbol];
+                            combined_result[j][combined_symbol] *= (1 / checked_cache.length);
+                        });
+                    } else {
+                        combined_result.forEach(function (item, j) {
+                            combined_result[j][combined_symbol] += cur_stock_data[j][cur_stock_symbol];
+                        });
+                    }
+                }
+                return combined_result;
+            }
+
+            function price_weight(combined_symbol) {
+                let data_size = data_cache[checked_cache[0]].length;
+                let first_symbol = checked_cache[0];
+                let combined_result = new Array(data_size).fill({});
+                let sum = new Array(data_size).fill(0);
+
+                combined_result.forEach(function (item, i) {
+                    combined_result[i] = {
+                        'time': data_cache[first_symbol][i]["time"],
+                    };
+                    combined_result[i][combined_symbol] = Math.pow(data_cache[first_symbol][i][first_symbol], 2);
+                    sum[i] += data_cache[first_symbol][i][first_symbol];
+                });
+
+                for (let i = 1; i < checked_cache.length; i++) {
+                    let cur_stock_symbol = checked_cache[i];
+                    let cur_stock_data = data_cache[cur_stock_symbol];
+                    if (i === checked_cache.length - 1) {
+                        combined_result.forEach(function (item, j) {
+                            combined_result[j][combined_symbol] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
+                            sum[j] += cur_stock_data[j][cur_stock_symbol];
+                            combined_result[j][combined_symbol] /= sum[j];
+                        });
+                    } else {
+                        combined_result.forEach(function (item, j) {
+                            combined_result[j][combined_symbol] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
+                            sum[j] += cur_stock_data[j][cur_stock_symbol];
+                        });
+                    }
+                }
+                return combined_result;
+            }
+
+            function populate_graph_data(combined_symbol, weight_strategy) {
+                switch (weight_strategy) {
+                    case WEIGHT_STRATEGY.EQUAL_WEIGHT:
+                        return equal_weight(combined_symbol);
+                    case WEIGHT_STRATEGY.PRICE_WEIGHT:
+                        return price_weight(combined_symbol);
+                    default:
+                        return;
+                }
+            }
+
+            $('.i-checks').on('ifChecked', function () {
+                let stock_symbol = $(this).closest('td').next()[0].outerText;
+                let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
+                    '<div class="ibox-title"><h5>Stock Price: ' + stock_symbol + '</h5></div>' +
+                    '<div class="ibox-content text-center">' +
+                    '<div id="' + stock_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                    '</div></div></div>';
+                if (display_cache.indexOf(stock_symbol) === -1) {
+                    display_cache.push(stock_symbol);
+                    $.ajax({
+                        type: "GET",
+                        url: "/stock",
+                        data: {"stock_symbol": stock_symbol},
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function (result, status, xhr) {
+                            $("#draw-section").append(html_snippet);
+                            drawChart(result, stock_symbol);
+                            data_cache[stock_symbol] = result;
+                        },
+                        error: function (xhr, status, error) {
+                            alert("Local error callback.");
+                        }
+                    });
+                } else {
+                    $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).toggle();
+                }
+                checked_cache.push(stock_symbol);
+            });
+
+            $('.i-checks').on('ifUnchecked', function () {
+                stock_symbol = $(this).closest('td').next()[0].outerText;
+                let index = checked_cache.indexOf(stock_symbol);
+                if (index !== -1) checked_cache.splice(index, 1);
+                $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).toggle();
+            });
+
+            $('.dataTables-example').DataTable({
+                pageLength: 5,
+                aLengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
+                iDisplayLength: 25,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    {
+                        text: 'None',
+                        action: function (e, dt, node, config) {
+                            console.log(e);
+                            console.log(dt);
+                            console.log(node);
+                            console.log(config);
+                        }
+                    },
+                    {
+                        text: 'Equal Weight',
+                        action: function (e, dt, node, config) {
+                            let combined_symbol = checked_cache.join('_') + "_ew";
+
+                            $(".weight_graph").hide();
+
+                            if (checked_cache.length < 2) return;
+
+                            if (display_cache.indexOf(combined_symbol) !== -1) {
+                                $("#" + combined_symbol).closest($(".col-lg-4.col-md-6")).show();
+                                return;
+                            }
+
+                            for (let i = 1; i < checked_cache.length; i++) {
+                                if (data_cache[checked_cache[i]].length !== data_cache[checked_cache[i - 1]].length) {
+                                    alert("The number of price points do not match!");
+                                    return;
+                                }
+                            }
+
+                            display_cache.push(combined_symbol);
+
+                            let combined_result = populate_graph_data(combined_symbol, WEIGHT_STRATEGY.EQUAL_WEIGHT);
+
+                            let html_snippet = '<div class="col-lg-4 col-md-6 weight_graph"><div class="ibox float-e-margins">' +
+                                '<div class="ibox-title"><h5>Equal Weight Stock Price</h5></div>' +
+                                '<div class="ibox-content text-center">' +
+                                '<div id="' + combined_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                                '</div></div></div>';
+                            $("#draw-section").prepend(html_snippet);
+                            drawChart(combined_result, combined_symbol);
+                        }
+                    },
+                    {
+                        text: 'Price Weight',
+                        action: function (e, dt, node, config) {
+                            let combined_symbol = checked_cache.join('_') + "_pw";
+
+                            $(".weight_graph").hide();
+
+                            if (checked_cache.length < 2) return;
+
+                            if (display_cache.indexOf(combined_symbol) !== -1) {
+                                $("#" + combined_symbol).closest($(".col-lg-4.col-md-6")).show();
+                                return;
+                            }
+
+                            for (let i = 1; i < checked_cache.length; i++) {
+                                if (data_cache[checked_cache[i]].length !== data_cache[checked_cache[i - 1]].length) {
+                                    alert("The number of price points do not match!");
+                                    return;
+                                }
+                            }
+
+                            display_cache.push(combined_symbol);
+
+                            let combined_result = populate_graph_data(combined_symbol, WEIGHT_STRATEGY.PRICE_WEIGHT);
+
+                            let html_snippet = '<div class="col-lg-4 col-md-6 weight_graph"><div class="ibox float-e-margins">' +
+                                '<div class="ibox-title"><h5>Equal Weight Stock Price</h5></div>' +
+                                '<div class="ibox-content text-center">' +
+                                '<div id="' + combined_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                                '</div></div></div>';
+                            $("#draw-section").prepend(html_snippet);
+                            drawChart(combined_result, combined_symbol);
+                        }
+                    }
+                ]
+            });
+
+        })
+        ;
+    </script>
+
+{% endblock extra_js %}
