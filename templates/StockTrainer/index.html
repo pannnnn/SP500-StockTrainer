@@ -154,7 +154,7 @@
     <script src="{% static 'js/plugins/dataTables/datatables.min.js' %}"></script>
 
     <!-- Highcharts JS -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
 
@@ -164,135 +164,162 @@
                 EQUAL_WEIGHT: 0,
                 PRICE_WEIGHT: 1,
             };
-            let display_cache = [];
+            let isStackEnabled = false;
+            let unstacked_display_cache = [];
             let checked_cache = [];
             let data_cache = {};
+            let symbol_name_mapping = {};
 
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
                 radioClass: 'iradio_square-green',
             });
 
-            function drawChart(result, stock_symbol, company_name) {
-                let data = [];
-                for (const point of result) {
-                    data.push([point["time"], point[stock_symbol]]);
+            function cleanData(data) {
+                let stock_symbol = Object.keys(data[0])[1];
+                let clean_data = new Array();
+                for (const point of data) {
+                    clean_data.push([point["time"], point[stock_symbol]]);
                 }
+                return clean_data;
+            }
 
-                (function plot(data) {
-                    Highcharts.chart(stock_symbol, {
-                        chart: {
-                            zoomType: 'x'
-                        },
-                        title: {
-                            text: company_name + ' Stock Closing Prices Since 1997-01-01 (In Days)'
-                        },
-                        subtitle: {
-                            text: document.ontouchstart === undefined ?
-                                'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
-                        },
-                        xAxis: {
-                            type: 'datetime'
-                        },
-                        yAxis: {
-                            title: {
-                                text: 'Stock Price'
+            function drawChart(data, stock_symbol, company_name) {
+                Highcharts.stockChart(stock_symbol, {
+
+                    rangeSelector: {
+                        selected: 4
+                    },
+
+                    title: {
+                        text: company_name + ' (Closing) Stock Price'
+                    },
+
+                    series: [{
+                        name: stock_symbol,
+                        data: data,
+                        tooltip: {
+                            valueDecimals: 2
+                        }
+                    }]
+                });
+            }
+
+
+            function drawChartStacked(seriesOptions) {
+                Highcharts.stockChart('stacked', {
+
+                    rangeSelector: {
+                        selected: 4
+                    },
+
+                    yAxis: {
+                        labels: {
+                            formatter: function () {
+                                return (this.value > 0 ? ' + ' : '') + this.value + '%';
                             }
                         },
-                        legend: {
-                            enabled: false
-                        },
-                        plotOptions: {
-                            area: {
-                                fillColor: {
-                                    linearGradient: {
-                                        x1: 0,
-                                        y1: 0,
-                                        x2: 0,
-                                        y2: 1
-                                    },
-                                    stops: [
-                                        [0, Highcharts.getOptions().colors[0]],
-                                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-                                    ]
-                                },
-                                marker: {
-                                    radius: 2
-                                },
-                                lineWidth: 1,
-                                states: {
-                                    hover: {
-                                        lineWidth: 1
-                                    }
-                                },
-                                threshold: null
-                            }
-                        },
-
-                        series: [{
-                            type: 'area',
-                            name: 'Closing Price',
-                            data: data
+                        plotLines: [{
+                            value: 0,
+                            width: 2,
+                            color: 'silver'
                         }]
-                    });
-                })(data);
+                    },
+
+                    plotOptions: {
+                        series: {
+                            compare: 'percent',
+                            showInNavigator: true
+                        }
+                    },
+
+                    tooltip: {
+                        pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
+                        valueDecimals: 2,
+                        split: true
+                    },
+
+                    series: seriesOptions
+                });
             }
 
-            function equal_weight(combined_symbol) {
+
+            function setStackedDataAndDraw() {
+                $("#stacked").closest($(".col-lg-4.col-md-6")).show();
+                let seriesOptions = [];
+                for (let i = 0; i < checked_cache.length; i++) {
+                    seriesOptions[i] = {
+                        name: checked_cache[i],
+                        data: cleanData(data_cache[checked_cache[i]])
+                    };
+                }
+                drawChartStacked(seriesOptions);
+            }
+
+            function setDataAndDraw(data, stock_symbol) {
+                let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
+                    '<div class="ibox-title"><h5>Stock Price: ' + stock_symbol + '</h5></div>' +
+                    '<div class="ibox-content text-center">' +
+                    '<div id="' + stock_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                    '</div></div></div>';
+                $("#draw-section").append(html_snippet);
+                drawChart(data, stock_symbol, symbol_name_mapping[stock_symbol]);
+                $("#" + stock_symbol).addClass("stock_checked");
+                unstacked_display_cache.push(stock_symbol);
+            }
+
+            function equalWeight() {
                 let data_size = data_cache[checked_cache[0]].length;
                 let first_symbol = checked_cache[0];
-                let combined_result = new Array(data_size).fill({});
+                let combined_result = [];
 
-                combined_result.forEach(function (item, i) {
-                    combined_result[i] = {
-                        'time': data_cache[first_symbol][i]["time"],
-                    };
-                    combined_result[i][combined_symbol] = data_cache[first_symbol][i][first_symbol];
-                });
+                for (let i = 0; i < data_size; i++) {
+                    let cur_stock_data = data_cache[first_symbol][i];
+                    combined_result.push([cur_stock_data["time"], cur_stock_data[first_symbol]])
+                }
 
                 for (let i = 1; i < checked_cache.length; i++) {
                     let cur_stock_symbol = checked_cache[i];
                     let cur_stock_data = data_cache[cur_stock_symbol];
                     if (i === checked_cache.length - 1) {
                         combined_result.forEach(function (item, j) {
-                            combined_result[j][combined_symbol] += cur_stock_data[j][cur_stock_symbol];
-                            combined_result[j][combined_symbol] *= (1 / checked_cache.length);
+                            combined_result[j][1] += cur_stock_data[j][cur_stock_symbol];
+                            combined_result[j][1] *= (1 / checked_cache.length);
                         });
                     } else {
                         combined_result.forEach(function (item, j) {
-                            combined_result[j][combined_symbol] += cur_stock_data[j][cur_stock_symbol];
+                            combined_result[j][1] += cur_stock_data[j][cur_stock_symbol];
                         });
                     }
                 }
+
                 return combined_result;
             }
 
-            function price_weight(combined_symbol) {
+            function priceWeight() {
                 let data_size = data_cache[checked_cache[0]].length;
                 let first_symbol = checked_cache[0];
-                let combined_result = new Array(data_size).fill({});
-                let sum = new Array(data_size).fill(0);
+                let combined_result = [];
+                let sum = [];
 
-                combined_result.forEach(function (item, i) {
-                    combined_result[i] = {
-                        'time': data_cache[first_symbol][i]["time"],
-                    };
-                    combined_result[i][combined_symbol] = Math.pow(data_cache[first_symbol][i][first_symbol], 2);
-                    sum[i] += data_cache[first_symbol][i][first_symbol];
-                });
+                for (let i = 0; i < data_size; i++) {
+                    let cur_stock_data = data_cache[first_symbol][i];
+                    combined_result.push([cur_stock_data["time"], Math.pow(cur_stock_data[first_symbol], 2)]);
+                    sum.push(cur_stock_data[first_symbol]);
+                }
 
                 for (let i = 1; i < checked_cache.length; i++) {
                     let cur_stock_symbol = checked_cache[i];
                     let cur_stock_data = data_cache[cur_stock_symbol];
                     if (i === checked_cache.length - 1) {
                         combined_result.forEach(function (item, j) {
-                            combined_result[j][combined_symbol] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
+                            combined_result[j][1] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
                             sum[j] += cur_stock_data[j][cur_stock_symbol];
-                            combined_result[j][combined_symbol] /= sum[j];
+                            combined_result[j][1] /= sum[j];
                         });
                     } else {
                         combined_result.forEach(function (item, j) {
-                            combined_result[j][combined_symbol] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
+                            combined_result[j][1] += Math.pow(cur_stock_data[j][cur_stock_symbol], 2);
                             sum[j] += cur_stock_data[j][cur_stock_symbol];
                         });
                     }
@@ -300,12 +327,12 @@
                 return combined_result;
             }
 
-            function populate_graph_data(combined_symbol, weight_strategy) {
+            function populate_graph_data(weight_strategy) {
                 switch (weight_strategy) {
                     case WEIGHT_STRATEGY.EQUAL_WEIGHT:
-                        return equal_weight(combined_symbol);
+                        return equalWeight();
                     case WEIGHT_STRATEGY.PRICE_WEIGHT:
-                        return price_weight(combined_symbol);
+                        return priceWeight();
                     default:
                         return;
                 }
@@ -314,42 +341,57 @@
             $('.i-checks').on('ifChecked', function () {
                 let stock_symbol = $(this).closest('td').next()[0].outerText;
                 let company_name = $(this).closest('td').next().next()[0].outerText;
-                let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
-                    '<div class="ibox-title"><h5>Stock Price: ' + stock_symbol + '</h5></div>' +
-                    '<div class="ibox-content text-center">' +
-                    '<div id="' + stock_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
-                    '</div></div></div>';
-                if (display_cache.indexOf(stock_symbol) === -1) {
-                    display_cache.push(stock_symbol);
+
+                if (!(stock_symbol in symbol_name_mapping)) {
+                    symbol_name_mapping[stock_symbol] = company_name;
+                }
+
+                checked_cache.push(stock_symbol);
+
+                if (!(stock_symbol in data_cache)) {
                     $.ajax({
                         type: "GET",
                         url: "/stock",
                         data: {"stock_symbol": stock_symbol},
                         dataType: "json",
-                        contentType: "application/json",
-                        success: function (result, status, xhr) {
-                            $("#draw-section").append(html_snippet);
-                            drawChart(result, stock_symbol, company_name);
-                            data_cache[stock_symbol] = result;
-                        },
-                        error: function (xhr, status, error) {
-                            alert("Local error callback.");
+                        contentType: "application/json"
+                    }).done(function (result, status, xhr) {
+                        let clean_result = cleanData(result);
+                        data_cache[stock_symbol] = result;
+                        if (isStackEnabled) {
+                            setStackedDataAndDraw();
+                        } else {
+                            setDataAndDraw(clean_result, stock_symbol, company_name);
                         }
+                    }).fail(function (xhr, status, error) {
+                        alert("Local error callback.");
                     });
                 } else {
-                    $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).toggle();
+                    $("#" + stock_symbol).addClass("stock_checked");
+                    if (isStackEnabled) {
+                        setStackedDataAndDraw();
+                    } else {
+                        $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).show();
+                    }
                 }
-                checked_cache.push(stock_symbol);
             });
 
             $('.i-checks').on('ifUnchecked', function () {
                 stock_symbol = $(this).closest('td').next()[0].outerText;
                 let index = checked_cache.indexOf(stock_symbol);
                 if (index !== -1) checked_cache.splice(index, 1);
-                $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).toggle();
+                $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).hide();
+                $("#" + stock_symbol).removeClass("stock_checked");
+                if (isStackEnabled) {
+                    if (checked_cache.length === 0) {
+                        $("#stacked").closest($(".col-lg-4.col-md-6")).hide();
+                    } else {
+                        setStackedDataAndDraw();
+                    }
+                }
             });
 
-            $('.dataTables-example').DataTable({
+            let data_table = $('.dataTables-example').DataTable({
                 pageLength: 5,
                 aLengthMenu: [[5, 10, 25, -1], [5, 10, 25, "All"]],
                 iDisplayLength: 25,
@@ -357,24 +399,55 @@
                 dom: '<"html5buttons"B>lTfgitp',
                 buttons: [
                     {
-                        text: 'None',
+                        text: 'Stack',
                         action: function (e, dt, node, config) {
-                            console.log(e);
-                            console.log(dt);
-                            console.log(node);
-                            console.log(config);
+                            isStackEnabled = !data_table.button(0).active();
+                            data_table.button(0).active(isStackEnabled);
+
+                            if (isStackEnabled) {
+                                if ($("#stacked").length === 0) {
+                                    let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
+                                        '<div class="ibox-title"><h5>Stacked Stock Price</h5></div>' +
+                                        '<div class="ibox-content text-center">' +
+                                        '<div id="stacked" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                                        '</div></div></div>';
+                                    $("#draw-section").append(html_snippet);
+                                }
+
+                                if (checked_cache.length === 0) {
+                                    $("#stacked").closest($(".col-lg-4.col-md-6")).hide();
+                                    return;
+                                }
+
+                                $(".stock_checked").closest($(".col-lg-4.col-md-6")).hide();
+                                setStackedDataAndDraw();
+
+                            } else {
+                                $("#stacked").closest($(".col-lg-4.col-md-6")).hide();
+
+                                for (let stock_symbol of checked_cache) {
+                                    if (unstacked_display_cache.indexOf(stock_symbol) === -1) {
+                                        let data = cleanData(data_cache[stock_symbol]);
+                                        setDataAndDraw(data, stock_symbol);
+                                    }
+                                }
+
+                                $(".stock_checked").closest($(".col-lg-4.col-md-6")).show();
+                            }
                         }
                     },
                     {
                         text: 'Equal Weight',
                         action: function (e, dt, node, config) {
-                            let combined_symbol = checked_cache.join('_') + "_EQUAL_WEIGHT";
+                            let combined_symbol = checked_cache.join(',') + "-EW";
 
                             $(".weight_graph").hide();
 
                             if (checked_cache.length < 2) return;
 
-                            if (display_cache.indexOf(combined_symbol) !== -1) {
+                            if (unstacked_display_cache.indexOf(combined_symbol) !== -1) {
+                                // Jquery does not work with comma
+                                combined_symbol = combined_symbol.replace(/,/g, '\\,');
                                 $("#" + combined_symbol).closest($(".col-lg-4.col-md-6")).show();
                                 return;
                             }
@@ -386,9 +459,9 @@
                                 }
                             }
 
-                            display_cache.push(combined_symbol);
+                            unstacked_display_cache.push(combined_symbol);
 
-                            let combined_result = populate_graph_data(combined_symbol, WEIGHT_STRATEGY.EQUAL_WEIGHT);
+                            let combined_result = populate_graph_data(WEIGHT_STRATEGY.EQUAL_WEIGHT);
 
                             let html_snippet = '<div class="col-lg-4 col-md-6 weight_graph"><div class="ibox float-e-margins">' +
                                 '<div class="ibox-title"><h5>Equal Weight Stock Price</h5></div>' +
@@ -402,13 +475,15 @@
                     {
                         text: 'Price Weight',
                         action: function (e, dt, node, config) {
-                            let combined_symbol = checked_cache.join('_') + "_PRICE_WEIGHT";
+                            let combined_symbol = checked_cache.join(',') + "-PW";
 
                             $(".weight_graph").hide();
 
                             if (checked_cache.length < 2) return;
 
-                            if (display_cache.indexOf(combined_symbol) !== -1) {
+                            if (unstacked_display_cache.indexOf(combined_symbol) !== -1) {
+                                // Jquery does not work with comma
+                                combined_symbol = combined_symbol.replace(/,/g, '\\,');
                                 $("#" + combined_symbol).closest($(".col-lg-4.col-md-6")).show();
                                 return;
                             }
@@ -420,9 +495,9 @@
                                 }
                             }
 
-                            display_cache.push(combined_symbol);
+                            unstacked_display_cache.push(combined_symbol);
 
-                            let combined_result = populate_graph_data(combined_symbol, WEIGHT_STRATEGY.PRICE_WEIGHT);
+                            let combined_result = populate_graph_data(WEIGHT_STRATEGY.PRICE_WEIGHT);
 
                             let html_snippet = '<div class="col-lg-4 col-md-6 weight_graph"><div class="ibox float-e-margins">' +
                                 '<div class="ibox-title"><h5>Equal Weight Stock Price</h5></div>' +
