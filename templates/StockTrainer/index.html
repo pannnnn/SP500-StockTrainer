@@ -158,6 +158,9 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
 
+    <!-- Moment JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+
     <script>
         $(document).ready(function () {
             const WEIGHT_STRATEGY = {
@@ -169,11 +172,35 @@
             let checked_cache = [];
             let data_cache = {};
             let symbol_name_mapping = {};
+            let index_code_mapping = {
+                "sp500": ["SP 500", "BCIW/_INX"],
+                "sp400": ["SP 400", "BCIW/_IDX"],
+                "dowjones": ["Dow Jones", "BCB/UDJIAD1"],
+                "nasdaq": ["NASDAQ", "NASDAQOMX/COMP"],
+                "usd": ["USD/CAD", "CUR/CAD"]
+            };
 
             $('.i-checks').iCheck({
                 checkboxClass: 'icheckbox_square-green',
                 radioClass: 'iradio_square-green',
             });
+
+            function fetchIndex(index_name) {
+                let baseurl = "https://www.quandl.com/api/v3/datasets/";
+                let quandlcode = index_code_mapping[index_name][1];
+                let endurl = "start_date=1997-01-01&order=asc&api_key=ACdPaLLDhak82Uf9au9C";
+                let url = baseurl + quandlcode + ".json?" + endurl;
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    contentType: "application/json"
+                }).done(function (result, status, xhr) {
+                    let data = result.dataset.data.map(arr => [moment(arr[0], "YYYY-MM-DD").valueOf(), arr[1]]);
+                    setDataAndDraw(data, index_name, false);
+                }).fail(function (xhr, status, error) {
+                    alert("Failed to fetch quandl.");
+                });
+            }
 
             function cleanData(data) {
                 let stock_symbol = Object.keys(data[0])[1];
@@ -256,16 +283,20 @@
                 drawChartStacked(seriesOptions);
             }
 
-            function setDataAndDraw(data, stock_symbol) {
+            function setDataAndDraw(data, data_symbol, isStock) {
                 let html_snippet = '<div class="col-lg-4 col-md-6"><div class="ibox float-e-margins">' +
-                    '<div class="ibox-title"><h5>Stock Price: ' + stock_symbol + '</h5></div>' +
+                    '<div class="ibox-title"><h5>Stock Price: ' + data_symbol + '</h5></div>' +
                     '<div class="ibox-content text-center">' +
-                    '<div id="' + stock_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
+                    '<div id="' + data_symbol + '" style="min-width: 310px; height: 400px; margin: 0 auto"></div>' +
                     '</div></div></div>';
                 $("#draw-section").append(html_snippet);
-                drawChart(data, stock_symbol, symbol_name_mapping[stock_symbol]);
-                $("#" + stock_symbol).addClass("stock_checked");
-                unstacked_display_cache.push(stock_symbol);
+                if (isStock) {
+                    drawChart(data, data_symbol, symbol_name_mapping[data_symbol]);
+                    $("#" + data_symbol).addClass("stock_checked");
+                } else {
+                    drawChart(data, data_symbol, index_code_mapping[data_symbol][0]);
+                }
+                unstacked_display_cache.push(data_symbol);
             }
 
             function equalWeight() {
@@ -361,18 +392,22 @@
                         if (isStackEnabled) {
                             setStackedDataAndDraw();
                         } else {
-                            setDataAndDraw(clean_result, stock_symbol, company_name);
+                            setDataAndDraw(clean_result, stock_symbol, true);
                         }
                     }).fail(function (xhr, status, error) {
                         alert("Local error callback.");
                     });
                 } else {
-                    $("#" + stock_symbol).addClass("stock_checked");
                     if (isStackEnabled) {
                         setStackedDataAndDraw();
                     } else {
-                        $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).show();
+                        if ($("#" + stock_symbol).length === 0) {
+                            setDataAndDraw(cleanData(data_cache[stock_symbol]), stock_symbol, true);
+                        } else {
+                            $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).show();
+                        }
                     }
+                    $("#" + stock_symbol).addClass("stock_checked");
                 }
             });
 
@@ -399,10 +434,90 @@
                 dom: '<"html5buttons"B>lTfgitp',
                 buttons: [
                     {
+                        text: 'SP500',
+                        action: function (e, dt, node, config) {
+                            sp500Enabled = !data_table.button(0).active();
+                            data_table.button(0).active(sp500Enabled);
+                            if (sp500Enabled) {
+                                if (unstacked_display_cache.includes("sp500")) {
+                                    $("#sp500").closest($(".col-lg-4.col-md-6")).show();
+                                } else {
+                                    fetchIndex("sp500");
+                                }
+                            } else {
+                                $("#sp500").closest($(".col-lg-4.col-md-6")).hide();
+                            }
+                        }
+                    },
+                    {
+                        text: 'SP400',
+                        action: function (e, dt, node, config) {
+                            sp400Enabled = !data_table.button(1).active();
+                            data_table.button(1).active(sp400Enabled);
+                            if (sp400Enabled) {
+                                if (unstacked_display_cache.includes("sp400")) {
+                                    $("#sp400").closest($(".col-lg-4.col-md-6")).show();
+                                } else {
+                                    fetchIndex("sp400");
+                                }
+                            } else {
+                                $("#sp400").closest($(".col-lg-4.col-md-6")).hide();
+                            }
+                        }
+                    },
+                    {
+                        text: 'NASDAQ',
+                        action: function (e, dt, node, config) {
+                            nasdaqEnabled = !data_table.button(2).active();
+                            data_table.button(2).active(nasdaqEnabled);
+                            if (nasdaqEnabled) {
+                                if (unstacked_display_cache.includes("nasdaq")) {
+                                    $("#nasdaq").closest($(".col-lg-4.col-md-6")).show();
+                                } else {
+                                    fetchIndex("nasdaq");
+                                }
+                            } else {
+                                $("#nasdaq").closest($(".col-lg-4.col-md-6")).hide();
+                            }
+                        }
+                    },
+                    {
+                        text: 'Dow Jones',
+                        action: function (e, dt, node, config) {
+                            dowjonesEnabled = !data_table.button(3).active();
+                            data_table.button(3).active(dowjonesEnabled);
+                            if (dowjonesEnabled) {
+                                if (unstacked_display_cache.includes("dowjones")) {
+                                    $("#dowjones").closest($(".col-lg-4.col-md-6")).show();
+                                } else {
+                                    fetchIndex("dowjones");
+                                }
+                            } else {
+                                $("#dowjones").closest($(".col-lg-4.col-md-6")).hide();
+                            }
+                        }
+                    },
+                    {
+                        text: 'USD/CAD',
+                        action: function (e, dt, node, config) {
+                            usdEnabled = !data_table.button(4).active();
+                            data_table.button(4).active(usdEnabled);
+                            if (usdEnabled) {
+                                if (unstacked_display_cache.includes("usd")) {
+                                    $("#usd").closest($(".col-lg-4.col-md-6")).show();
+                                } else {
+                                    fetchIndex("usd");
+                                }
+                            } else {
+                                $("#usd").closest($(".col-lg-4.col-md-6")).hide();
+                            }
+                        }
+                    },
+                    {
                         text: 'Stack',
                         action: function (e, dt, node, config) {
-                            isStackEnabled = !data_table.button(0).active();
-                            data_table.button(0).active(isStackEnabled);
+                            isStackEnabled = !data_table.button(5).active();
+                            data_table.button(5).active(isStackEnabled);
 
                             if (isStackEnabled) {
                                 if ($("#stacked").length === 0) {
@@ -428,7 +543,7 @@
                                 for (let stock_symbol of checked_cache) {
                                     if (unstacked_display_cache.indexOf(stock_symbol) === -1) {
                                         let data = cleanData(data_cache[stock_symbol]);
-                                        setDataAndDraw(data, stock_symbol);
+                                        setDataAndDraw(data, stock_symbol, true);
                                     }
                                 }
 
@@ -510,9 +625,7 @@
                     }
                 ]
             });
-
-        })
-        ;
+        });
     </script>
 
 {% endblock extra_js %}
