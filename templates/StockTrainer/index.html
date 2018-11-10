@@ -6,136 +6,61 @@
     <link rel="stylesheet" href="{% static 'css/plugins/dataTables/datatables.min.css' %}">
 {% endblock extra_css %}
 
-
 {% block body %}
 
-    <div id="wrapper">
-        <div id="page-wrapper" class="gray-bg">
-            <div class="row border-bottom white-bg">
-                <nav class="navbar navbar-static-top" role="navigation">
-                    <div class="navbar-header">
-                        <button aria-controls="navbar" aria-expanded="false" data-target="#navbar"
-                                data-toggle="collapse" class="navbar-toggle collapsed" type="button">
-                            <i class="fa fa-reorder"></i>
-                        </button>
-                        <a href="#" class="navbar-brand">Stock Trainer</a>
-                    </div>
-                    <div class="navbar-collapse collapse" id="navbar">
-                        <ul class="nav navbar-nav">
-                            <li class="dropdown">
-                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
-                                <ul role="menu" class="dropdown-menu">
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
-                                <ul role="menu" class="dropdown-menu">
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
-                                <ul role="menu" class="dropdown-menu">
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a aria-expanded="false" role="button" href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown"> Menu item <span class="caret"></span></a>
-                                <ul role="menu" class="dropdown-menu">
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                    <li><a href="">Menu item</a></li>
-                                </ul>
-                            </li>
+    <div class="wrapper wrapper-content">
+        <div class="container-fluid">
 
-                        </ul>
-                    </div>
-                </nav>
-            </div>
-            <div class="wrapper wrapper-content">
-                <div class="container-fluid">
-
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="ibox float-e-margins">
-                                <div class="ibox-title">
-                                    <h5>S&P 500 Listing </h5>
-                                </div>
-                                <div class="ibox-content">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover dataTables-example">
-                                            <thead>
-                                            <tr>
-
-                                                <th></th>
-                                                <th>Company Symbol</th>
-                                                <th>Company Name</th>
-                                                <th>Reserved</th>
-                                                <th>Reserved</th>
-                                                <th>Reserved</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for stock_symbol, company_name in stock_symbols.items %}
-                                                <tr>
-                                                    <td><input type="checkbox" class="i-checks" name="input[]"></td>
-                                                    <td>{{ stock_symbol }}</td>
-                                                    <td>{{ company_name }}</td>
-                                                    <td>Reserved</td>
-                                                    <td>Reserved</td>
-                                                    <td><a href="#"><i class="fa fa-check text-navy"></i></a></td>
-                                                </tr>
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                </div>
-                            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="ibox float-e-margins">
+                        <div class="ibox-title">
+                            <h5>S&P 500 Listing </h5>
                         </div>
+                        <div class="ibox-content">
+                            <div class="table-responsive">
+                                <table class="table table-hover dataTables-example">
+                                    <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Company Symbol</th>
+                                        <th>Company Name</th>
+                                        <th>Reserved</th>
+                                        <th>Reserved</th>
+                                        <th>Reserved</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for stock_symbol, company_name in stock_symbols.items %}
+                                        <tr>
+                                            <td><input type="checkbox" class="i-checks" name="input[]"></td>
+                                            <td>{{ stock_symbol }}</td>
+                                            <td>{{ company_name }}</td>
+                                            <td>Reserved</td>
+                                            <td>Reserved</td>
+                                            <td><a href="#"><i class="fa fa-check text-navy"></i></a></td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
 
+                        </div>
                     </div>
-
-                    <div class="row" id="draw-section">
-                    </div>
-
                 </div>
 
             </div>
-            <div class="footer">
-                <div class="text-center">
-                    <strong>Copyright</strong> Hugh Pan &copy; 2018-2018
-                </div>
+
+            <div class="row" id="draw-section">
             </div>
 
         </div>
+
     </div>
 
 {% endblock %}
 
 {% block extra_js %}
-
-    {% load static %}
-    <!-- Mainly scripts -->
-    <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
-    <script src="{% static 'js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 
     <!-- Custom and plugin javascript -->
     <script src="{% static 'js/inspinia.js' %}"></script>
@@ -370,8 +295,8 @@
             }
 
             $('.i-checks').on('ifChecked', function () {
-                let stock_symbol = $(this).closest('td').next()[0].outerText;
-                let company_name = $(this).closest('td').next().next()[0].outerText;
+                let stock_symbol = $(this).closest('td').next()[0].textContent;
+                let company_name = $(this).closest('td').next().next()[0].textContent;
 
                 if (!(stock_symbol in symbol_name_mapping)) {
                     symbol_name_mapping[stock_symbol] = company_name;
@@ -412,7 +337,7 @@
             });
 
             $('.i-checks').on('ifUnchecked', function () {
-                stock_symbol = $(this).closest('td').next()[0].outerText;
+                stock_symbol = $(this).closest('td').next()[0].textContent;
                 let index = checked_cache.indexOf(stock_symbol);
                 if (index !== -1) checked_cache.splice(index, 1);
                 $("#" + stock_symbol).closest($(".col-lg-4.col-md-6")).hide();

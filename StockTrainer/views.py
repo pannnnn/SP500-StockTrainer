@@ -11,16 +11,14 @@ def index(request):
     return render(request, 'StockTrainer/index.html', context)
 
 
-def stocks(request):
-    context = {
-        "stock_symbols": sp500
-    }
-    return render(request, 'StockTrainer/stocks.html', context)
-
-
 def stock(request):
-    stock_symbol = request.GET.get('stock_symbol')
+    stock_symbol = request.GET.get('stock_symbol').strip()
     client = get_influxdb_client()
     prices = query(client, stock_symbol)
+    print(stock_symbol, len(stock_symbol))
     result = list(prices.get_points('price'))
     return JsonResponse(result, safe=False)
+
+
+def import_portfolio(request):
+    return render(request, 'StockTrainer/import_portfolio.html')

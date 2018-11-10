@@ -1,0 +1,39 @@
+{% extends 'StockTrainer/layout.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/plugins/dropzone/basic.css' %}">
+    <link rel="stylesheet" href="{% static 'css/plugins/dropzone/dropzone.css' %}">
+{% endblock extra_css %}
+
+{% block body %}
+    <div class="wrapper wrapper-content animated fadeIn">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="ibox">
+                    <div class="ibox-content">
+                        <form action="#" class="dropzone" id="dropzoneForm">
+                            <div class="fallback">
+                                <input name="file" type="file" multiple />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+
+    <!-- DROPZONE -->
+    <script src="{% static 'js/plugins/dropzone/dropzone.js' %}"></script>
+
+    <script>
+        Dropzone.options.dropzoneForm = {
+            paramName: "file", // The name that will be used to transfer the file
+            maxFilesize: 2, // MB
+            dictDefaultMessage: "<strong>Drop files here or click to upload. </strong></br> (Files should be of the format csv or pdf.)"
+        };
+    </script>
+{% endblock %}
